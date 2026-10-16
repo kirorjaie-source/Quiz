@@ -34,16 +34,15 @@ namespace Quiz
             builder.Services.AddScoped<IQuizService, QuizService>();
             builder.Services.AddScoped<IScoringService, ScoringService>();
             builder.Services.AddScoped<IGameService, GameService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
 
             builder.Services.AddSignalR(o => o.AddFilter<HubExceptionFilter>());
             builder.Services.AddHostedService<GameTimerService>();
 
-            // 1. إعداد متغيرات JWT مع قيم افتراضية في حال عدم وجودها في appsettings.json
             var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyHere1234567890KeyMustBeAtLeast32Bytes!";
             var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "QuizApi";
             var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "QuizUsers";
 
-            // 2. إعداد الـ Authentication مع تفعيل كامل الفحوصات
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,11 +59,26 @@ namespace Quiz
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-                    ClockSkew = TimeSpan.Zero // إلغاء فارق التوقيت الافتراضي (5 دقائق) لضمان الدقة
+                    ClockSkew = TimeSpan.Zero 
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/gamehub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
-            // 3. إعداد Swagger لدعم JWT
+      
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -102,6 +116,7 @@ namespace Quiz
                       .AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 
             var app = builder.Build();
+            app.UseStaticFiles();
 
             await InitializeDbAsync(app);
 

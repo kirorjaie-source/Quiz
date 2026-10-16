@@ -30,11 +30,10 @@ namespace Persistence.Data
                 {
                     var demoUser = new User
                     {
-                        // إذا كان الـ Id يتم توليده تلقائياً في القاعدة، يفضل حذف السطر التالي:
-                        // Id = 1, 
+                       
                         UserName= "KerolosRjaie",
                        
-                        Email = "Kero@gmail.com", // تعديل الإيميل ليصبح بصيغة صحيحة
+                        Email = "Kero@gmail.com", 
                         Password="1234",
                         Quizzes = new List<Quiz>
         {
@@ -63,7 +62,6 @@ namespace Persistence.Data
         }
                     };
 
-                    // التعديل هنا: الإضافة لجدول المستخدمين بدلاً من الاختبارات
                     await _appDbContext.users.AddAsync(demoUser);
                     await _appDbContext.SaveChangesAsync();
                 }

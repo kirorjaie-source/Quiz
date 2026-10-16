@@ -86,6 +86,8 @@ namespace Persistence.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("HostId");
+
                     b.HasIndex("PinCode");
 
                     b.HasIndex("QuizId");
@@ -314,10 +316,16 @@ namespace Persistence.Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.GameSession", b =>
                 {
+                    b.HasOne("Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Quiz", "Quiz")
                         .WithMany("GameSessions")
                         .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Quiz");
@@ -339,7 +347,7 @@ namespace Persistence.Data.Migrations
                     b.HasOne("Domain.Entities.Player", "Player")
                         .WithMany("PlayerAnswers")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.Question", "Question")
@@ -377,7 +385,7 @@ namespace Persistence.Data.Migrations
                     b.HasOne("Domain.Entities.User", "Creator")
                         .WithMany("Quizzes")
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Creator");

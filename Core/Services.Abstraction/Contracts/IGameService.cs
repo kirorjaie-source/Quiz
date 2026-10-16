@@ -12,7 +12,7 @@ namespace Services.Abstraction.Contracts
         Task<SessionCreatedDto> CreateSessionAsync(int hostId, int quizId, int durationMinutes);
         Task<PlayerIdentityDto> JoinAsync(string pinCode, string nickname);
         Task<PlayerIdentityDto> RejoinAsync(string pinCode, Guid reconnectToken);
-        Task<int> VerifyHostAsync(string pinCode, int hostId);   // بيرجّع SessionId
+        Task<int> VerifyHostAsync(string pinCode, int hostId);  
         Task<GameStartedDto> StartAsync(int sessionId, int hostId);
         Task EndSessionAsync(int sessionId, int hostId);
 

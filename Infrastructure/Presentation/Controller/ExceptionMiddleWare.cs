@@ -29,9 +29,9 @@ namespace Presentation.Controller
            {
                context.Response.StatusCode = ex switch
                {
-                   KeyNotFoundException => StatusCodes.Status404NotFound,          // مش موجود
-                   UnauthorizedAccessException => StatusCodes.Status403Forbidden,   // مش مسموح
-                   InvalidOperationException => StatusCodes.Status400BadRequest,    // طلب غلط
+                   KeyNotFoundException => StatusCodes.Status404NotFound,         
+                   UnauthorizedAccessException => StatusCodes.Status403Forbidden, 
+                   InvalidOperationException => StatusCodes.Status400BadRequest,  
                    _ => StatusCodes.Status500InternalServerError
                };
 

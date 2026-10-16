@@ -36,7 +36,7 @@ namespace Services.Implementation
                         await _hub.Clients.Group(pin).SendAsync("GameFinished", board);
                     }
                 }
-                catch (Exception) { /* متوقفش الـ timer لو حصل error */ }
+                catch (Exception) { }
 
                 await Task.Delay(TimeSpan.FromSeconds(2), ct);
             }

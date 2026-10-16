@@ -11,5 +11,8 @@ namespace Services.Abstraction.Contracts
     {
         Task<AuthResultDto> RegisterAsync(RegisterDto registerDto);
         Task<AuthResultDto> LoginAsync(LoginDto loginDto);
+        Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
+        Task ResetPasswordAsync(string? adminKey, AdminResetPasswordDto dto);
+
     }
 }

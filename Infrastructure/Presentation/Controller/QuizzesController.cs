@@ -43,6 +43,7 @@ namespace Presentation.Controller
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, QuizCreateDto dto)
         {
+
             var isAdmin = User.IsInRole("Admin");
             await _quizzes.UpdateAsync(User.GetUserId(), id, dto, isAdmin);
             return NoContent();

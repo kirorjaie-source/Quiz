@@ -10,43 +10,64 @@ namespace Persistence.Data
 {
     public class AppDbContext : DbContext
     {
+       
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);  
 
-            // الـ Enums تتخزن كنص (أوضح عند القراءة)
             modelBuilder.Entity<Quiz>().Property(q => q.QuizCategory).HasConversion<string>();
             modelBuilder.Entity<Question>().Property(q => q.questionType).HasConversion<string>();
             modelBuilder.Entity<GameSession>().Property(s => s.Status).HasConversion<string>();
 
-            // ---- Indexes ----
             modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
             modelBuilder.Entity<GameSession>().HasIndex(s => s.PinCode);
             modelBuilder.Entity<Player>().HasIndex(p => p.ReconnectToken).IsUnique();
             modelBuilder.Entity<Player>()
-                .HasIndex(p => new { p.GameSessionId, p.PlayerName }).IsUnique();   // مفيش اسمين زي بعض في جيم
+                .HasIndex(p => new { p.GameSessionId, p.PlayerName }).IsUnique();
             modelBuilder.Entity<PlayerAnswer>()
-                .HasIndex(a => new { a.PlayerId, a.QuestionId }).IsUnique();      // إجابة واحدة لكل سؤال
+                .HasIndex(a => new { a.PlayerId, a.QuestionId }).IsUnique();
 
-            // منع الحذف المتسلسل من ناحية الطالب عشان نحل مشكلة الـ Multiple Cascade Paths
-            modelBuilder.Entity<PlayerAnswer>()
-                .HasOne(pa => pa.Player)
-                .WithMany(p => p.PlayerAnswers)
-                .HasForeignKey(pa => pa.PlayerId)
-                .OnDelete(DeleteBehavior.Restrict); // أو DeleteBehavior.NoAction
+            
+            modelBuilder.Entity<Question>()
+                .HasOne(q => q.Quiz).WithMany(z => z.Questions)
+                .HasForeignKey(q => q.QuizId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Answer>()
+                .HasOne(a => a.Question).WithMany(q => q.Answers)
+                .HasForeignKey(a => a.QuestionId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Player>()
+                .HasOne(p => p.GameSession).WithMany(s => s.Players)
+                .HasForeignKey(p => p.GameSessionId).OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PlayerAnswer>()
-                .HasOne(pa => pa.Question)
-                .WithMany(q => q.PlayerAnswers)
-                .HasForeignKey(pa => pa.QuestionId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(pa => pa.Player).WithMany(p => p.PlayerAnswers)
+                .HasForeignKey(pa => pa.PlayerId).OnDelete(DeleteBehavior.Cascade);
+
+           
+            modelBuilder.Entity<PlayerAnswer>()
+                .HasOne(pa => pa.Question).WithMany(q => q.PlayerAnswers)
+                .HasForeignKey(pa => pa.QuestionId).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<PlayerAnswer>()
-                .HasOne(pa => pa.SelectedAnswer)
-                .WithMany(a => a.PlayerAnswers)
-                .HasForeignKey(pa => pa.SelectedAnswerId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(pa => pa.SelectedAnswer).WithMany(a => a.PlayerAnswers)
+                .HasForeignKey(pa => pa.SelectedAnswerId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<GameSession>()
+                .HasOne(s => s.Quiz).WithMany(q => q.GameSessions)
+                .HasForeignKey(s => s.QuizId).OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Creator).WithMany(u => u.Quizzes)
+                .HasForeignKey(q => q.CreatorId).OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<GameSession>()
+                .HasOne<User>().WithMany()
+                .HasForeignKey(s => s.HostId).OnDelete(DeleteBehavior.NoAction);
         }
+
+      
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
 

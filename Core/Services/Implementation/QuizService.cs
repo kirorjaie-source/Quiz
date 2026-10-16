@@ -118,7 +118,6 @@ namespace Services.Implementation
             var quiz = await _uow.GetRepository<Quiz, int>().GetAsync(new QuizByIdSpec(quizId))
                        ?? throw new KeyNotFoundException("Quiz not found");
 
-            // شرط السماح: إذا كان أدمن يتخطى الفحص، وإذا لم يكن أدمن يجب أن يكون هو صاحب الكويز
             if (!isAdmin && quiz.CreatorId != userId)
                 throw new UnauthorizedAccessException();
 

@@ -89,12 +89,14 @@ namespace Services.Implementation
         // ===== اللاعبين =====
         public async Task<PlayerIdentityDto> JoinAsync(string pinCode, string nickname)
         {
-            var session = await Sessions.GetAsync(new WaitingSessionByPinSpec(pinCode))
-                          ?? throw new KeyNotFoundException("Game not found or already started");
+            // 🔴 استخدام ActiveSessionByPinSpec بدلاً من WaitingSessionByPinSpec
+            var session = await Sessions.GetAsync(new ActiveSessionByPinSpec(pinCode))
+                          ?? throw new KeyNotFoundException("Game not found or already finished");
 
             nickname = nickname.Trim();
             if (string.IsNullOrEmpty(nickname) || nickname.Length > 20)
                 throw new InvalidOperationException("Nickname is required (max 20 characters)");
+
             if (await Players.AnyAsync(new PlayerByNicknameSpec(session.Id, nickname)))
                 throw new InvalidOperationException("Nickname already taken");
 
@@ -105,6 +107,7 @@ namespace Services.Implementation
                 CurrentQuestionIdex = 0,
                 ReconnectToken = Guid.NewGuid()   // سر اللاعب، بيستخدمه بس لو النت فصل
             };
+
             await Players.AddAsync(player);
             await _uow.SaveChangeAsync();
 
@@ -160,7 +163,7 @@ namespace Services.Implementation
             {
                 PlayerId = playerId,
                 QuestionId = question.Id,
-                OptionId = optionId,
+                SelectedAnswerId = optionId,
                 IsCorrect = isCorrect,
                 ResponseTimeInSeconds = elapsed,
                 PointsEarned = points
@@ -193,7 +196,7 @@ namespace Services.Implementation
             {
                 PlayerId = playerId,
                 QuestionId = question.Id,
-                OptionId = null,
+                SelectedAnswer= null,
                 IsCorrect = false,
                 ResponseTimeInSeconds = question.TimeLimitInSeconds,
                 PointsEarned = 0
